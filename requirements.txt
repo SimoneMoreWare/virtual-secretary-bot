@@ -1,0 +1,6 @@
+google-auth==2.19.0
+google-auth-oauthlib==1.0.0
+google-api-python-client==2.70.0
+googletrans==4.0.0-rc1
+telethon==1.29.0
+parsedatetime==2.6
