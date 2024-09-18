@@ -1,12 +1,14 @@
-# virtual-secretary-bot
-**Virtual Secretary - Automated Response Bot** is a Python-based application designed to automatically respond to messages on Telegram based on your availability in Google Calendar. This bot helps you manage communications efficiently when you're busy, by checking your schedule and replying with your availability.
+# Virtual Secretary Bot 🤖
+![Python Version](https://img.shields.io/badge/python-3.x-blue) ![License](https://img.shields.io/badge/license-MIT-green)
+
+## Description
+The **Virtual Secretary Bot** is a Python-based automated application designed to respond to Telegram messages by checking availability in Google Calendar and replying based on scheduled events. It uses the Google Calendar API, `Telethon`, and natural language parsing with `parsedatetime` for a smooth interactive experience.
 
 ## Features
-- Automatically responds to Telegram messages.
-- Checks availability from Google Calendar.
-- Translates natural language time queries to English.
-- Parses and interprets human-readable date/time strings.
-- Provides event details based on the extracted date/time from messages.
+- Automatically responds to Telegram messages based on calendar availability.
+- Advanced natural language query parsing (e.g., "Are you free tomorrow?").
+- Integration with Google Calendar to check daily events.
+- Automatic translation of messages using Google Translate API.
 
 ## Documentation
 
@@ -41,8 +43,7 @@ To set up this bot, follow these steps:
 
 1. **Clone the Repository**:
    ```
-   git clone https://github.com/yourusername/virtual-secretary.git
-   cd virtual-secretary
+   git clone https://github.com/SimoneMoreWare/virtual-secretary-bot.git
    ```
 
 2. **Create a Virtual Environment**:
@@ -63,16 +64,24 @@ To set up this bot, follow these steps:
 5. **Configure Your Credentials**:
     * Replace the placeholder values in the script with your actual Telegram API credentials and Google Calendar credentials.
     * Ensure you have a credentials.json file for Google Calendar and a token.json file if you've previously authenticated.
+    * Set up the bot by creating a `.env` file with the following parameters:
+       ```
+        TELEGRAM_API_ID=<your_api_id>
+       TELEGRAM_API_HASH=<your_api_hash>
+       GOOGLE_CALENDAR_ID=<your_calendar_id>
+       ```
+
 
 ## Usage
-1. **Start the bot**
+Show examples of how to use the bot, including screenshots or commands.
+
+1. Start the bot with:
+   ```bash
+   python bot.py
    ```
-   python main.py
-   ```
-   
-2. **Interact with the Bot**:
-    * The bot will listen for incoming messages on Telegram.
-    * It will automatically check your Google Calendar for availability and respond based on the extracted date/time from messages.
+2. Send a message on Telegram, for example:
+   - "Are you free now?"
+   - "What is the next appointment?"
 
 ## Configuration
 * Telegram Credentials:
@@ -91,10 +100,5 @@ This project is licensed under the MIT License. See the [LICENSE](https://openso
 ## Contact
 For questions or issues, please open an issue on the GitHub repository or contact me at candidosimone598@gmail.com.
 
-
-### Notes:
-- **Replace placeholders** like `yourusername`, `your-email@example.com`, and other project-specific details with actual values.
-- **Include a `requirements.txt` file** with all the necessary dependencies for the project.
-- **Update URLs and other references** as needed.
-
-This `README.md` provides a comprehensive guide to understanding, installing, and using your bot, while also directing users to relevant resources for further information.
+## Screenshots
+![Bot in Action](screenshot.png)
