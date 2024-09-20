@@ -105,26 +105,24 @@ def parse_time_string(time_string):
         return None
 
     try:
-        # Usa parsedatetime per analizzare la stringa di tempo
+        # Use parsedatetime to parse the time string
         time_struct, parse_status = cal.parse(time_string)
         
         if "now" in time_string.lower():
             parse_status = 1
         
         if parse_status == 0:
-            # Se il parsing fallisce, return None e stampa un errore
+            # If parsing fails, return None and print an error
             return None
         
         if time_struct:
-            # Converte la struttura temporale in un oggetto datetime
+            # Convert the time structure into a datetime object
             return datetime.datetime(*time_struct[:6])
         
         return None
     
     except Exception as e:
         return None
-
-
 
 def get_events_by_time(service, calendar_id, time_string):
     """
