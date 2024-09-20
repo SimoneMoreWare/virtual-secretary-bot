@@ -91,6 +91,30 @@ Show examples of how to use the bot, including screenshots or commands.
 * User ID:
      * Set yourUser_id to your Telegram user ID.
 
+## To obtain your Telegram credentials
+
+### 1. Get API ID and API Hash
+1. **Visit the Telegram API Development page**:
+   - Go to [my.telegram.org](https://my.telegram.org).
+
+2. **Log in with your Telegram account**:
+   - You’ll need to enter your phone number and verify it via a code sent to your Telegram app.
+
+3. **Create a new application**:
+   - Once logged in, navigate to the "API Development Tools" section.
+   - Fill out the form to create a new application. You will need to provide:
+     - App title
+     - Short name
+     - URL (optional)
+   - After creating the app, you will see your **API ID** and **API Hash**.
+  
+### 2. Get Your Telegram User ID
+
+You can find your user ID using one of the following methods:
+
+1. **Using a Telegram Bot**:
+   - Search for the bot named **"userinfobot"** in Telegram.
+
 ## Contributing
 Feel free to fork the repository, create branches, and submit pull requests. Contributions to improve functionality or documentation are welcome.
 
