@@ -1,6 +1,27 @@
 # Virtual Secretary Bot 🤖
 ![Python Version](https://img.shields.io/badge/python-3.x-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
+## Table of Contents
+1. [Description](#description)
+2. [Features](#features)
+3. [Documentation](#documentation)
+   - [Google Calendar API Quickstart for Python](#google-calendar-api-quickstart-for-python)
+   - [Parsing Human-Readable Date/Time Strings](#parsing-human-readable-datetime-strings)
+   - [Google Translate API](#google-translate-api)
+   - [Telethon for Telegram Userbot](#telethon-for-telegram-userbot)
+   - [Google Calendar Automation in Python](#google-calendar-automation-in-python)
+4. [Why Telethon?](#why-telethon)
+5. [Installation](#installation)
+6. [Usage](#usage)
+7. [Configuration](#configuration)
+8. [To Obtain Your Telegram Credentials](#to-obtain-your-telegram-credentials)
+   - [Get API ID and API Hash](#1-get-api-id-and-api-hash)
+   - [Get Your Telegram User ID](#2-get-your-telegram-user-id)
+9. [Contributing](#contributing)
+10. [License](#license)
+11. [Contact](#contact)
+12. [Screenshots](#screenshots)
+
 ## Description
 The **Virtual Secretary Bot** is a Python-based automated application designed to respond to Telegram messages by checking availability in Google Calendar and replying based on scheduled events. It uses the Google Calendar API, `Telethon`, and natural language parsing with `parsedatetime` for a smooth interactive experience.
 
@@ -113,7 +134,7 @@ Show examples of how to use the bot, including screenshots or commands.
 You can find your user ID using one of the following methods:
 
 1. **Using a Telegram Bot**:
-   - Search for the bot named **"userinfobot"** in Telegram.
+   - Search for the bot named **"userinfobot"** in Telegram and sent it a messagge. Bot replies with User ID information.
 
 ## Contributing
 Feel free to fork the repository, create branches, and submit pull requests. Contributions to improve functionality or documentation are welcome.
