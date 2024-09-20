@@ -65,20 +65,14 @@ def get_authenticated_service():
         Google Calendar API service object
     """
     creds = load_credentials()
-    print(f"Loaded credentials: {creds}")
 
     if not creds or not creds.valid:
-        print("Credentials not valid, refreshing or creating new ones...")
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
-            print("Credentials refreshed successfully.")
         else:
-            print("Starting OAuth flow...")
             flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
             creds = flow.run_local_server(port=51306)
-            print("OAuth flow completed, credentials obtained.")
         save_credentials(creds)
-        print("Credentials saved.")
     
     return build("calendar", "v3", credentials=creds)
 
@@ -152,14 +146,11 @@ def get_events_by_time(service, calendar_id, time_string):
 
     # Translate and parse the time string
     translated_time_string = translate_time_string(time_string)
-    print(f"Translated time string: {translated_time_string}")
     parsed_time, flag_now = parse_time_string(translated_time_string)  # Also get flag_now
 
     if not parsed_time:
         return []
 
-    print("Parsed_time: ", parsed_time)
-    print("FlagNow:", flag_now)
 
     # Extract only the date
     date_only = parsed_time.date()
@@ -172,8 +163,6 @@ def get_events_by_time(service, calendar_id, time_string):
         time_min = datetime.datetime.combine(date_only, datetime.time.min).isoformat() + "Z"
         time_max = datetime.datetime.combine(date_only, datetime.time(23, 59, 59)).isoformat() + "Z"
 
-    print("time_min: ", time_min)
-    print("time_max: ", time_max)
     
     try:
         events_result = (
@@ -200,7 +189,6 @@ def get_events_by_time(service, calendar_id, time_string):
         return filtered_events
 
     except HttpError as error:
-        print(f"An error occurred: {error}")
         return []
 
 def format_events(events):
@@ -234,14 +222,10 @@ def extract_dates_from_message(message):
     """
     # Translate the message to English
     translated_message = translate_time_string(message)
-    print(f"Translated message: {translated_message}")
 
     # Parse the translated message to extract date
     parsed_date = parse_time_string(translated_message)
-    if parsed_date:
-        print(f"Extracted date: {parsed_date}")
-    else:
-        print(f"No date extracted from message: '{message}'")
+   
     return parsed_date
 
 def check_current_events(service, calendar_ids):
@@ -296,10 +280,7 @@ async def handle_new_message(event):
         
         # Check if the user ID is different and if a date was extracted
         isNot_same_user = (yourUser_id != user_id)
-        
-        # Log user ID for debugging
-        print(user_id, yourUser_id)
-        
+                
         # Get the authenticated Google Calendar service
         service = get_authenticated_service()
        
@@ -314,7 +295,6 @@ async def handle_new_message(event):
             for calendar_id in CALENDAR_IDS:
                 events = get_events_by_time(service, calendar_id, message_text)
                 all_events.extend(events)
-            print("allEvent: ",all_events)
             # Sort all events by start time and take the first max_results events
             all_events.sort(key=lambda e: e["start"].get("dateTime", e["start"].get("date")))
             limited_events = all_events[:max_results]  # Adjust 5 as needed for max results
@@ -347,7 +327,6 @@ def main():
     
     # Start the Telegram client using the provided phone number
     client.start(phone_number)
-    print("Userbot is running...")
     
     # Keep the bot running until it is disconnected
     client.run_until_disconnected()
