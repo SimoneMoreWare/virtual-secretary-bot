@@ -310,7 +310,7 @@ async def handle_new_message(event):
         else:
             # Do not reply if no date was found or if the message is from the same user
             # Check if there are current events
-            if check_current_events(service, CALENDAR_IDS):
+            if check_current_events(service, CALENDAR_IDS) and isNot_same_user:
                 await event.reply("Hi, I am " + your_name +"'s virtual assistant. He's currently busy with another event. Please check back later.")
                 return  # Exit the function if busy
             pass
