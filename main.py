@@ -112,7 +112,7 @@ def parse_time_string(time_string):
             parse_status = 1
         
         if parse_status == 0:
-            # If parsing fails, return None and print an error
+            # If parsing fails, return None
             return None
         
         if time_struct:
@@ -238,10 +238,7 @@ async def handle_new_message(event):
         
         # Check if the user ID is different and if a date was extracted
         isNot_same_user = (yourUser_id != user_id)
-        
-        # Log user ID for debugging
-        print(user_id, yourUser_id)
-        
+                
         if extracted_date and isNot_same_user:
             # Get the authenticated Google Calendar service
             service = get_authenticated_service()
@@ -251,12 +248,11 @@ async def handle_new_message(event):
             for calendar_id in CALENDAR_IDS:
                 events = get_events_by_time(service, calendar_id, message_text)
                 all_events.extend(events)
-            print("allEvent: ",all_events)
             # Sort all events by start time and take the first max_results events
             all_events.sort(key=lambda e: e["start"].get("dateTime", e["start"].get("date")))
             limited_events = all_events[:max_results]  # Adjust 5 as needed for max results
             
-            if not all_events:
+            if not all_events: #if all_events list is empty...
                 await event.reply("Hi, I am Simone's virtual assistant, I will list his schedule. He does not currently have any commitments on his schedule.")
             
             if limited_events:
