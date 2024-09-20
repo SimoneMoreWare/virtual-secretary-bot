@@ -192,6 +192,7 @@ def format_events(events):
     if not events:
         return "No upcoming events found."
     event_details = []
+    event_details.append("Hi, I am Simone's virtual assistant, I will list his schedule:\n")
     for event in events:
         start = event["start"].get("dateTime", event["start"].get("date"))
         event_details.append(f"{start} - {event['summary']}")
@@ -237,7 +238,10 @@ async def handle_new_message(event):
         
         # Check if the user ID is different and if a date was extracted
         isNot_same_user = (yourUser_id != user_id)
-                
+        
+        # Log user ID for debugging
+        print(user_id, yourUser_id)
+        
         if extracted_date and isNot_same_user:
             # Get the authenticated Google Calendar service
             service = get_authenticated_service()
@@ -247,10 +251,13 @@ async def handle_new_message(event):
             for calendar_id in CALENDAR_IDS:
                 events = get_events_by_time(service, calendar_id, message_text)
                 all_events.extend(events)
-
+            print("allEvent: ",all_events)
             # Sort all events by start time and take the first max_results events
             all_events.sort(key=lambda e: e["start"].get("dateTime", e["start"].get("date")))
             limited_events = all_events[:max_results]  # Adjust 5 as needed for max results
+            
+            if not all_events:
+                await event.reply("Hi, I am Simone's virtual assistant, I will list his schedule. He does not currently have any commitments on his schedule.")
             
             if limited_events:
                 # Format the events into a response string
