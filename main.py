@@ -1,14 +1,15 @@
 import datetime
 import os.path
+
 import parsedatetime
-from googletrans import Translator
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from telethon import TelegramClient, events
-from telethon.tl.types import PeerUser  # Import to identify private chats
+from telethon.tl.types import PeerUser
+from googletrans import Translator
 
 # Scope for read-only access to the Google Calendar API.
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
@@ -16,7 +17,7 @@ SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 # Insert your Telegram credentials
 api_id = 'YOUR_API_ID'  # Replace with your actual API ID
 api_hash = 'YOUR_API_HASH'  # Replace with your actual API hash
-yourUser_id = 'YOUR_USER_ID'  # Replace with your Telegram user ID
+your_user_id = 'YOUR_USER_ID'  # Replace with your Telegram user ID
 phone_number = 'YOUR_PHONE_NUMBER'  # Replace with your phone number in international format (e.g., '+1234567890')
 max_results = 10
 your_name = "Simone"
@@ -30,13 +31,14 @@ CALENDAR_IDS = [
     'id4_otherCalendar'
 ]
 
+
 # Create a new Telegram client instance
 client = TelegramClient('session_name', api_id, api_hash)
 
 # Create an instance of the parsedatetime parser
 cal = parsedatetime.Calendar()
 
-def load_credentials():
+def load_credentials() -> Credentials:
     """
     Load the user's credentials from token.json if available.
 
@@ -47,7 +49,7 @@ def load_credentials():
         return Credentials.from_authorized_user_file("token.json", SCOPES)
     return None
 
-def save_credentials(creds):
+def save_credentials(creds: Credentials):
     """
     Save the user's credentials to token.json for future use.
 
@@ -57,7 +59,7 @@ def save_credentials(creds):
     with open("token.json", "w") as token:
         token.write(creds.to_json())
 
-def get_authenticated_service():
+def get_authenticated_service() -> build:
     """
     Authenticate the user and return an authorized Google Calendar API service.
 
@@ -76,7 +78,7 @@ def get_authenticated_service():
     
     return build("calendar", "v3", credentials=creds)
 
-def translate_time_string(time_string):
+def translate_time_string(time_string: str) -> str:
     """
     Translate the time string to English using Google Translate.
 
@@ -93,7 +95,7 @@ def translate_time_string(time_string):
     except Exception as e:
         return time_string
 
-def parse_time_string(time_string):
+def parse_time_string(time_string: str) -> tuple:
     """
     Parse the translated time string into a datetime object.
 
@@ -107,6 +109,7 @@ def parse_time_string(time_string):
         return None, False  # Return False if there is no valid time_string
 
     try:
+        
         # Use parsedatetime to parse the time string
         time_struct, parse_status = cal.parse(time_string)
         
@@ -117,10 +120,12 @@ def parse_time_string(time_string):
             flag_now = False
                     
         if parse_status == 0:
+            
             # If parsing fails, return None and False
             return None, False
         
         if time_struct:
+            
             # Convert the time structure into a datetime object
             return datetime.datetime(*time_struct[:6]), flag_now
         
@@ -129,7 +134,7 @@ def parse_time_string(time_string):
     except Exception as e:
         return None, False
 
-def get_events_by_time(service, calendar_id, time_string):
+def get_events_by_time(service, calendar_id, time_string) -> list:
     """
     Retrieve events from a specified calendar based on a natural language time string.
 
@@ -149,7 +154,7 @@ def get_events_by_time(service, calendar_id, time_string):
 
     if not parsed_time:
         return []
-        
+
     # Extract only the date
     date_only = parsed_time.date()
 
@@ -177,7 +182,6 @@ def get_events_by_time(service, calendar_id, time_string):
 
         # Filter events that belong only to the current day
         filtered_events = []
-        
         for event in events:
             start_date_str = event["start"].get("dateTime", event["start"].get("date"))
             start_date = datetime.datetime.strptime(start_date_str[:10], "%Y-%m-%d").date()
@@ -189,7 +193,7 @@ def get_events_by_time(service, calendar_id, time_string):
     except HttpError as error:
         return []
 
-def format_events(events):
+def format_events(events) -> str:
     """
     Format the list of events into a human-readable string.
 
@@ -201,17 +205,14 @@ def format_events(events):
     """
     if not events:
         return "No upcoming events found."
-        
     event_details = []
     event_details.append("Hi, I am " + your_name + "'s virtual assistant, I will list his schedule:\n")
-    
     for event in events:
         start = event["start"].get("dateTime", event["start"].get("date"))
         event_details.append(f"{start} - {event['summary']}")
-        
     return "\n".join(event_details)
 
-def extract_dates_from_message(message):
+def extract_dates_from_message(message: str) -> tuple:
     """
     Extract date from the message text.
 
@@ -229,7 +230,7 @@ def extract_dates_from_message(message):
     
     return parsed_date
 
-def check_current_events(service, calendar_ids):
+def check_current_events(service, calendar_ids) -> bool:
     """
     Check if there are any events happening at the current time across specified calendars.
 
@@ -268,7 +269,7 @@ def get_current_event(service, calendar_ids):
     events = events_result.get('items', [])
     return events[0] if events else None
 
-async def is_user_online(user_id):
+async def is_user_online(user_id) -> bool:
     """
     Checks if the user is online on Telegram.
 
@@ -291,8 +292,10 @@ async def handle_new_message(event):
     Args:
         event: The Telegram event containing the new message.
     """
+    
     # Check if the message comes from a private chat
     if isinstance(event.message.peer_id, PeerUser):
+        
         # Access the text of the message
         message_text = event.message.text
         
@@ -300,7 +303,7 @@ async def handle_new_message(event):
         user_id = event.message.from_id.user_id if event.message.from_id else None
         
         # Check if the user ID is different and if a date was extracted
-        isNot_same_user = (yourUser_id != user_id)
+        isNot_same_user = (your_user_id  != user_id)
         
         # Get the authenticated Google Calendar service
         service = get_authenticated_service()
@@ -312,11 +315,10 @@ async def handle_new_message(event):
             
             # Retrieve events from all specified calendars
             all_events = []
-            
             for calendar_id in CALENDAR_IDS:
                 events = get_events_by_time(service, calendar_id, message_text)
                 all_events.extend(events)
-                
+
             # Sort all events by start time and take the first max_results events
             all_events.sort(key=lambda e: e["start"].get("dateTime", e["start"].get("date")))
             limited_events = all_events[:max_results]  # Adjust 5 as needed for max results
@@ -325,18 +327,19 @@ async def handle_new_message(event):
                 await event.reply("Hi, I am " + your_name +"'s virtual assistant, I will list his schedule. He does not currently have any commitments on his schedule.")
             
             if limited_events:
+                
                 # Format the events into a response string
                 response = format_events(limited_events)
+                
                 # Reply to the message with event details
                 await event.reply(response)
                 
         else:
-            
             # Check if there are current events
             if check_current_events(service, CALENDAR_IDS) and isNot_same_user:
                 
                 # Check if the user is online
-                if await is_user_online(yourUser_id):
+                if await is_user_online(your_user_id ):
                     return  # Do nothing if the user is online
 
                 # Retrieve the end time of the current event
@@ -357,6 +360,7 @@ def main():
     """
     Main function to start the Telegram client and keep it running.
     """
+    
     # Authenticate and get the Google Calendar service
     service = get_authenticated_service()
         
