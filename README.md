@@ -26,10 +26,11 @@
 The **Virtual Secretary Bot** is a Python-based automated application designed to respond to Telegram messages by checking availability in Google Calendar and replying based on scheduled events. It uses the Google Calendar API, `Telethon`, and natural language parsing with `parsedatetime` for a smooth interactive experience.
 
 ## Features
-- Automatically responds to Telegram messages based on calendar availability.
-- Advanced natural language query parsing (e.g., "Are you free tomorrow?").
-- Integration with Google Calendar to check daily events.
-- Automatic translation of messages using Google Translate API.
+- Automatic Responses: Provides real-time updates on availability based on scheduled events.
+- Natural Language Processing: Understands and processes queries like "Are you free now?" or "What do you have on [date]?"
+- Google Calendar Integration: Retrieves events from the user's primary and secondary calendars.
+- Multilingual Support: Translates user inputs to English for better parsing.
+- Current Event Check: Notifies users if they are currently busy with an event.
 
 ## Documentation
 
