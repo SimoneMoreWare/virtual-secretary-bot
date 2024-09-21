@@ -177,6 +177,7 @@ def get_events_by_time(service, calendar_id, time_string):
 
         # Filter events that belong only to the current day
         filtered_events = []
+        
         for event in events:
             start_date_str = event["start"].get("dateTime", event["start"].get("date"))
             start_date = datetime.datetime.strptime(start_date_str[:10], "%Y-%m-%d").date()
@@ -200,11 +201,14 @@ def format_events(events):
     """
     if not events:
         return "No upcoming events found."
+        
     event_details = []
     event_details.append("Hi, I am " + your_name + "'s virtual assistant, I will list his schedule:\n")
+    
     for event in events:
         start = event["start"].get("dateTime", event["start"].get("date"))
         event_details.append(f"{start} - {event['summary']}")
+        
     return "\n".join(event_details)
 
 def extract_dates_from_message(message):
@@ -303,15 +307,16 @@ async def handle_new_message(event):
        
         # Extract the date from the message text
         extracted_date = extract_dates_from_message(message_text)
-        #here i want to add a function check if i have event in my calendar in a current time , if i am busy i send custom message
         
         if extracted_date[0] is not None and isNot_same_user:
             
             # Retrieve events from all specified calendars
             all_events = []
+            
             for calendar_id in CALENDAR_IDS:
                 events = get_events_by_time(service, calendar_id, message_text)
                 all_events.extend(events)
+                
             # Sort all events by start time and take the first max_results events
             all_events.sort(key=lambda e: e["start"].get("dateTime", e["start"].get("date")))
             limited_events = all_events[:max_results]  # Adjust 5 as needed for max results
@@ -324,7 +329,9 @@ async def handle_new_message(event):
                 response = format_events(limited_events)
                 # Reply to the message with event details
                 await event.reply(response)
+                
         else:
+            
             # Check if there are current events
             if check_current_events(service, CALENDAR_IDS) and isNot_same_user:
                 
