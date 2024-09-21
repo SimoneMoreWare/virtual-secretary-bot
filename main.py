@@ -91,7 +91,6 @@ def translate_time_string(time_string):
         translated_time_string = translator.translate(time_string, src='auto', dest='en').text
         return translated_time_string
     except Exception as e:
-        print(f"Translation error: {e}")
         return time_string
 
 def parse_time_string(time_string):
@@ -150,8 +149,7 @@ def get_events_by_time(service, calendar_id, time_string):
 
     if not parsed_time:
         return []
-
-
+        
     # Extract only the date
     date_only = parsed_time.date()
 
@@ -162,7 +160,6 @@ def get_events_by_time(service, calendar_id, time_string):
     else:
         time_min = datetime.datetime.combine(date_only, datetime.time.min).isoformat() + "Z"
         time_max = datetime.datetime.combine(date_only, datetime.time(23, 59, 59)).isoformat() + "Z"
-
     
     try:
         events_result = (
@@ -225,7 +222,7 @@ def extract_dates_from_message(message):
 
     # Parse the translated message to extract date
     parsed_date = parse_time_string(translated_message)
-   
+    
     return parsed_date
 
 def check_current_events(service, calendar_ids):
@@ -261,6 +258,26 @@ def check_current_events(service, calendar_ids):
     return False  # No current events found
 
 
+def get_current_event(service, calendar_ids):
+    now = datetime.datetime.utcnow().isoformat() + 'Z'
+    events_result = service.events().list(calendarId=calendar_ids[0], timeMin=now, maxResults=1, singleEvents=True, orderBy='startTime').execute()
+    events = events_result.get('items', [])
+    return events[0] if events else None
+
+async def is_user_online(user_id):
+    """
+    Checks if the user is online on Telegram.
+
+    Args:
+        user_id: The Telegram user ID to check.
+
+    Returns:
+        True if the user is online, False otherwise.
+    """
+    user = await client.get_entity(user_id)
+    return getattr(user.status, 'was_online', None) is None  # True if the user is online
+
+
 @client.on(events.NewMessage)
 async def handle_new_message(event):
     """
@@ -280,7 +297,7 @@ async def handle_new_message(event):
         
         # Check if the user ID is different and if a date was extracted
         isNot_same_user = (yourUser_id != user_id)
-                
+        
         # Get the authenticated Google Calendar service
         service = get_authenticated_service()
        
@@ -308,12 +325,23 @@ async def handle_new_message(event):
                 # Reply to the message with event details
                 await event.reply(response)
         else:
-            # Do not reply if no date was found or if the message is from the same user
             # Check if there are current events
             if check_current_events(service, CALENDAR_IDS) and isNot_same_user:
-                await event.reply("Hi, I am " + your_name +"'s virtual assistant. He's currently busy with another event. Please check back later.")
-                return  # Exit the function if busy
-            pass
+                
+                # Check if the user is online
+                if await is_user_online(yourUser_id):
+                    return  # Do nothing if the user is online
+
+                # Retrieve the end time of the current event
+                current_event = get_current_event(service, CALENDAR_IDS)
+                end_time = current_event["end"].get("dateTime", current_event["end"].get("date"))
+
+                # Extracting only the time
+                end_time_only = end_time[11:16]
+                
+                await event.reply(f"Hi, I am {your_name}'s virtual assistant. He's currently busy with another event, but he will be free after {end_time_only}.")
+               
+                return
     else:
         # Do nothing if the message comes from a group
         pass
@@ -324,7 +352,7 @@ def main():
     """
     # Authenticate and get the Google Calendar service
     service = get_authenticated_service()
-    
+        
     # Start the Telegram client using the provided phone number
     client.start(phone_number)
     
