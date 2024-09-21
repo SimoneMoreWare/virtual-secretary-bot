@@ -22,6 +22,10 @@ phone_number = 'YOUR_PHONE_NUMBER'  # Replace with your phone number in internat
 max_results = 10
 your_name = "Simone"
 
+# Global variable to track when the bot last responded
+last_response_time = 0
+response_cooldown = 60  # Set cooldown period (in seconds)
+
 # List of calendar IDs to retrieve events from
 CALENDAR_IDS = [
     'primary',  # Primary calendar
@@ -285,13 +289,7 @@ async def is_user_online(user_id) -> bool:
 
 @client.on(events.NewMessage)
 async def handle_new_message(event):
-    """
-    Handle incoming messages from Telegram and respond with calendar events.
-    This handler only responds to messages from private chats, not groups.
-
-    Args:
-        event: The Telegram event containing the new message.
-    """
+    global last_response_time
     
     # Check if the message comes from a private chat
     if isinstance(event.message.peer_id, PeerUser):
@@ -303,7 +301,7 @@ async def handle_new_message(event):
         user_id = event.message.from_id.user_id if event.message.from_id else None
         
         # Check if the user ID is different and if a date was extracted
-        isNot_same_user = (your_user_id  != user_id)
+        isNot_same_user = (your_user_id != user_id)
         
         # Get the authenticated Google Calendar service
         service = get_authenticated_service()
@@ -311,9 +309,10 @@ async def handle_new_message(event):
         # Extract the date from the message text
         extracted_date = extract_dates_from_message(message_text)
         
+        current_time = datetime.datetime.utcnow().timestamp()
+        
         if extracted_date[0] is not None and isNot_same_user:
-            
-            # Retrieve events from all specified calendars
+            # Handle events...
             all_events = []
             for calendar_id in CALENDAR_IDS:
                 events = get_events_by_time(service, calendar_id, message_text)
@@ -321,36 +320,30 @@ async def handle_new_message(event):
 
             # Sort all events by start time and take the first max_results events
             all_events.sort(key=lambda e: e["start"].get("dateTime", e["start"].get("date")))
-            limited_events = all_events[:max_results]  # Adjust 5 as needed for max results
+            limited_events = all_events[:max_results]  # Adjust max results as needed
             
             if not all_events:
-                await event.reply("Hi, I am " + your_name +"'s virtual assistant, I will list his schedule. He does not currently have any commitments on his schedule.")
+                await event.reply("Hi, I am " + your_name + "'s virtual assistant, I will list his schedule. He does not currently have any commitments on his schedule.")
+                
             
             if limited_events:
-                
-                # Format the events into a response string
                 response = format_events(limited_events)
-                
-                # Reply to the message with event details
                 await event.reply(response)
                 
         else:
             # Check if there are current events
             if check_current_events(service, CALENDAR_IDS) and isNot_same_user:
-                
-                # Check if the user is online
-                if await is_user_online(your_user_id ):
+                if await is_user_online(your_user_id):
                     return  # Do nothing if the user is online
 
-                # Retrieve the end time of the current event
                 current_event = get_current_event(service, CALENDAR_IDS)
                 end_time = current_event["end"].get("dateTime", current_event["end"].get("date"))
-
-                # Extracting only the time
                 end_time_only = end_time[11:16]
                 
-                await event.reply(f"Hi, I am {your_name}'s virtual assistant. He's currently busy with another event, but he will be free after {end_time_only}.")
-               
+                # Check if enough time has passed since the last response
+                if current_time - last_response_time >= response_cooldown:
+                    await event.reply(f"Hi, I am {your_name}'s virtual assistant. He's currently busy with another event, but he will be free after {end_time_only}.")
+                    last_response_time = current_time  # Update last response time
                 return
     else:
         # Do nothing if the message comes from a group
