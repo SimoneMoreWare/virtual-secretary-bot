@@ -102,8 +102,9 @@ Show examples of how to use the bot, including screenshots or commands.
    python bot.py
    ```
 2. Send a message on Telegram, for example:
-   - "Are you free now?"
-   - "What is the next appointment?"
+    - "Are you free now?": The bot checks for current events and responds with availability.
+    - "What is the next appointment?": The bot retrieves the next scheduled event.
+    - "What do you have on [date]?": The bot provides a list of events for the specified date.
 
 ## Configuration
 * Telegram Credentials:
@@ -138,13 +139,17 @@ You can find your user ID using one of the following methods:
    - Search for the bot named **"userinfobot"** in Telegram and sent it a messagge. Bot replies with User ID information.
 
 ## Contributing
-Feel free to fork the repository, create branches, and submit pull requests. Contributions to improve functionality or documentation are welcome.
+Feel free to fork the repository, create branches, and submit pull requests. Contributions to improve functionality or documentation are welcome. If you have specific coding standards or testing procedures, please adhere to them:
 
+    * Ensure all code adheres to [PEP 8](https://www.python.org/dev/peps/pep-0008/) for Python styling.
+    * Include tests for any new features or bug fixes.
+    * Update the documentation accordingly.
+    
 ## License
 This project is licensed under the MIT License. See the [LICENSE](https://opensource.org/license/mit) file for details.
 
 ## Contact
-For questions or issues, please open an issue on the GitHub repository or contact me at candidosimone598@gmail.com.
+For questions or issues, please open an issue on the GitHub repository or contact me at candidosimone598@gmail.com. You can also check my [GitHub profile](https://github.com/SimoneMoreWare) for more projects and updates.
 
 ## Screenshots
 ![Bot in Action](screenshot.png)
