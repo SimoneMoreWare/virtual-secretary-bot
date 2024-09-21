@@ -140,9 +140,9 @@ You can find your user ID using one of the following methods:
 
 ## Contributing
 Feel free to fork the repository, create branches, and submit pull requests. Contributions to improve functionality or documentation are welcome. If you have specific coding standards or testing procedures, please adhere to them:
-    * Ensure all code adheres to [PEP 8](https://www.python.org/dev/peps/pep-0008/) for Python styling.
-    * Include tests for any new features or bug fixes.
-    * Update the documentation accordingly.
+*  Ensure all code adheres to [PEP 8](https://www.python.org/dev/peps/pep-0008/) for Python styling.
+*  Include tests for any new features or bug fixes.
+*  Update the documentation accordingly.
     
 ## License
 This project is licensed under the MIT License. See the [LICENSE](https://opensource.org/license/mit) file for details.
