@@ -4,3 +4,4 @@ google-api-python-client==2.70.0
 googletrans==4.0.0-rc1
 telethon==1.36.0
 parsedatetime==2.6
+huggingface-hub
