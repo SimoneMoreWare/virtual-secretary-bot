@@ -10,6 +10,7 @@ from googleapiclient.errors import HttpError
 from telethon import TelegramClient, events
 from telethon.tl.types import PeerUser
 from googletrans import Translator
+from huggingface_hub import InferenceClient
 
 # Scope for read-only access to the Google Calendar API.
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
@@ -21,6 +22,7 @@ your_user_id = 'YOUR_USER_ID'  # Replace with your Telegram user ID
 phone_number = 'YOUR_PHONE_NUMBER'  # Replace with your phone number in international format (e.g., '+1234567890')
 max_results = 10
 your_name = "Simone"
+hugging_face_client = InferenceClient(model="google/gemma-2-2b-it",timeout=120,api_key="hf_xxx")
 
 # Global variable to track when the bot last responded
 last_response_time = 0
@@ -34,7 +36,6 @@ CALENDAR_IDS = [
     'id3_otherCalendar',
     'id4_otherCalendar'
 ]
-
 
 # Create a new Telegram client instance
 client = TelegramClient('session_name', api_id, api_hash)
@@ -82,7 +83,7 @@ def get_authenticated_service() -> build:
     
     return build("calendar", "v3", credentials=creds)
 
-def translate_time_string(time_string: str) -> str:
+async def translate_time_string(time_string: str) -> str:
     """
     Translate the time string to English using Google Translate.
 
@@ -94,7 +95,9 @@ def translate_time_string(time_string: str) -> str:
     """
     translator = Translator()
     try:
-        translated_time_string = translator.translate(time_string, src='auto', dest='en').text
+        translated_time_string = await translator.translate(time_string, src='auto', dest='en')
+        # access to translate text
+        translated_time_string = translated_time_string.text
         return translated_time_string
     except Exception as e:
         return time_string
@@ -138,7 +141,7 @@ def parse_time_string(time_string: str) -> tuple:
     except Exception as e:
         return None, False
 
-def get_events_by_time(service, calendar_id, time_string) -> list:
+async def get_events_by_time(service, calendar_id, time_string) -> list:
     """
     Retrieve events from a specified calendar based on a natural language time string.
 
@@ -150,10 +153,9 @@ def get_events_by_time(service, calendar_id, time_string) -> list:
     Returns:
         List of events from the Google Calendar API or an empty list if an error occurs.
     """
-    now = datetime.datetime.utcnow()
 
     # Translate and parse the time string
-    translated_time_string = translate_time_string(time_string)
+    translated_time_string = await translate_time_string(time_string)
     parsed_time, flag_now = parse_time_string(translated_time_string)  # Also get flag_now
 
     if not parsed_time:
@@ -164,11 +166,11 @@ def get_events_by_time(service, calendar_id, time_string) -> list:
 
     # Set time_min and time_max
     if flag_now:
-        time_min = datetime.datetime.utcnow().isoformat() + "Z"
-        time_max = (datetime.datetime.utcnow() + datetime.timedelta(minutes=90)).isoformat() + "Z"
+        time_min = datetime.datetime.now().isoformat() + "Z"
+        time_max = (datetime.datetime.now() + datetime.timedelta(minutes=90)).isoformat() + "Z"
     else:
-        time_min = datetime.datetime.combine(date_only, datetime.time.min).isoformat() + "Z"
-        time_max = datetime.datetime.combine(date_only, datetime.time(23, 59, 59)).isoformat() + "Z"
+        time_min = datetime.datetime.combine(date_only, datetime.time.min).isoformat() + "Z" 
+        time_max = datetime.datetime.combine(date_only, datetime.time(23, 59, 59)).isoformat() + "Z"  
     
     try:
         events_result = (
@@ -216,7 +218,7 @@ def format_events(events) -> str:
         event_details.append(f"{start} - {event['summary']}")
     return "\n".join(event_details)
 
-def extract_dates_from_message(message: str) -> tuple:
+async def extract_dates_from_message(message: str) -> tuple:
     """
     Extract date from the message text.
 
@@ -227,7 +229,7 @@ def extract_dates_from_message(message: str) -> tuple:
         Extracted datetime object or None if extraction fails.
     """
     # Translate the message to English
-    translated_message = translate_time_string(message)
+    translated_message = await translate_time_string(message)
 
     # Parse the translated message to extract date
     parsed_date = parse_time_string(translated_message)
@@ -245,7 +247,7 @@ def check_current_events(service, calendar_ids) -> bool:
     Returns:
         True if there is a current event, otherwise False.
     """
-    now = datetime.datetime.utcnow().isoformat() + "Z"  # Current time in UTC
+    now = datetime.datetime.now().isoformat() + "Z"
 
     for calendar_id in calendar_ids:
         events_result = (
@@ -253,7 +255,7 @@ def check_current_events(service, calendar_ids) -> bool:
             .list(
                 calendarId=calendar_id,
                 timeMin=now,
-                timeMax=(datetime.datetime.utcnow() + datetime.timedelta(minutes=1)).isoformat() + "Z",
+                timeMax = (datetime.datetime.now() + datetime.timedelta(minutes=1)).isoformat() + "Z",
                 singleEvents=True,
                 orderBy="startTime",
             )
@@ -268,7 +270,7 @@ def check_current_events(service, calendar_ids) -> bool:
 
 
 def get_current_event(service, calendar_ids):
-    now = datetime.datetime.utcnow().isoformat() + 'Z'
+    now = datetime.datetime.now().isoformat()  + "Z"
     events_result = service.events().list(calendarId=calendar_ids[0], timeMin=now, maxResults=1, singleEvents=True, orderBy='startTime').execute()
     events = events_result.get('items', [])
     return events[0] if events else None
@@ -286,36 +288,54 @@ async def is_user_online(user_id) -> bool:
     user = await client.get_entity(user_id)
     return getattr(user.status, 'was_online', None) is None  # True if the user is online
 
+def chat_with_gpt(hugging_face_client: InferenceClient, prompt: str):
+    messages = [{"role": "user", "content": prompt}]
+    stream = hugging_face_client.chat.completions.create(
+        messages=messages, 
+        max_tokens=500,
+        stream=True
+    )
+
+    # Variabile per accumulare il contenuto del stream
+    response_text = ""
+
+    # Concatenazione dei chunk
+    for chunk in stream:
+        response_text += chunk.choices[0].delta.content
+
+    return response_text
+
+
 
 @client.on(events.NewMessage)
 async def handle_new_message(event):
     global last_response_time
-    
+
     # Check if the message comes from a private chat
     if isinstance(event.message.peer_id, PeerUser):
         
         # Access the text of the message
         message_text = event.message.text
-        
+
         # Extract the user ID from the message
         user_id = event.message.from_id.user_id if event.message.from_id else None
-        
+
         # Check if the user ID is different and if a date was extracted
         isNot_same_user = (your_user_id != user_id)
         
         # Get the authenticated Google Calendar service
         service = get_authenticated_service()
-       
+
         # Extract the date from the message text
-        extracted_date = extract_dates_from_message(message_text)
-        
-        current_time = datetime.datetime.utcnow().timestamp()
+        extracted_date = await extract_dates_from_message(message_text)
+
+        current_time = datetime.datetime.now().timestamp()
         
         if extracted_date[0] is not None and isNot_same_user:
             # Handle events...
             all_events = []
             for calendar_id in CALENDAR_IDS:
-                events = get_events_by_time(service, calendar_id, message_text)
+                events = await get_events_by_time(service, calendar_id, message_text)
                 all_events.extend(events)
 
             # Sort all events by start time and take the first max_results events
@@ -323,8 +343,7 @@ async def handle_new_message(event):
             limited_events = all_events[:max_results]  # Adjust max results as needed
             
             if not all_events:
-                await event.reply("Hi, I am " + your_name + "'s virtual assistant, I will list his schedule. He does not currently have any commitments on his schedule.")
-                
+                await event.reply("Hi, I am " + your_name + "'s virtual assistant. I will list his schedule. He does not currently have any commitments on his schedule.")
             
             if limited_events:
                 response = format_events(limited_events)
@@ -339,12 +358,18 @@ async def handle_new_message(event):
                 current_event = get_current_event(service, CALENDAR_IDS)
                 end_time = current_event["end"].get("dateTime", current_event["end"].get("date"))
                 end_time_only = end_time[11:16]
-                
+
                 # Check if enough time has passed since the last response
                 if current_time - last_response_time >= response_cooldown:
                     await event.reply(f"Hi, I am {your_name}'s virtual assistant. He's currently busy with another event, but he will be free after {end_time_only}.")
                     last_response_time = current_time  # Update last response time
                 return
+            else:
+                # Generate the response
+                response = chat_with_gpt(hugging_face_client, message_text)
+
+                # Reply to the user
+                await event.reply(response)
     else:
         # Do nothing if the message comes from a group
         pass
