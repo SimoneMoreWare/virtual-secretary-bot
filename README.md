@@ -175,4 +175,6 @@ This project is licensed under the MIT License. See the [LICENSE](https://openso
 For questions or issues, please open an issue on the GitHub repository or contact me at candidosimone598@gmail.com. You can also check my [GitHub profile](https://github.com/SimoneMoreWare) for more projects and updates.
 
 ## Screenshots
-![Bot in Action](screenshot.png)
+![Bot in Action1](screenshot/screenshot1.png)
+![Bot in Action2](screenshot/screenshot2.png)
+
