@@ -365,7 +365,7 @@ async def handle_new_message(event):
                     await event.reply(f"Hi, I am {your_name}'s virtual assistant. He's currently busy with another event, but he will be free after {end_time_only}.")
                     last_response_time = current_time  # Update last response time
                 return
-            else:
+            elif isNot_same_user:
                 # Generate the response
                 response = chat_with_gpt(hugging_face_client, message_text)
 
