@@ -350,10 +350,11 @@ async def handle_new_message(event):
                 await event.reply(response)
                 
         else:
+            if await is_user_online(your_user_id):
+                    return  # Do nothing if the user is online
+        
             # Check if there are current events
             if check_current_events(service, CALENDAR_IDS) and isNot_same_user:
-                if await is_user_online(your_user_id):
-                    return  # Do nothing if the user is online
 
                 current_event = get_current_event(service, CALENDAR_IDS)
                 end_time = current_event["end"].get("dateTime", current_event["end"].get("date"))
